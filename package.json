@@ -1,0 +1,31 @@
+{
+  "name": "skiline-ads",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Meta Ads management for Skiline Recruitment",
+  "scripts": {
+    "start": "node server.js",
+    "leads:pull": "node scripts/pull-leads.js",
+    "leads:sync": "node scripts/sync-leads.js",
+    "toggle": "node scripts/weekly-toggle.js",
+    "toggle:dry": "node scripts/weekly-toggle.js --dry-run",
+    "analyze:local": "node scripts/analyze-local.js",
+    "audience:upload": "node scripts/upload-audience.js",
+    "audience:lookalike": "node scripts/create-lookalike.js",
+    "audience:analyze": "node scripts/analyze-audience.js",
+    "audience:apply:dry": "node scripts/apply-lookalike.js --dry-run",
+    "audience:apply": "node scripts/apply-lookalike.js",
+    "creatives:dry": "node scripts/update-creatives.js --dry-run",
+    "creatives:update": "node scripts/update-creatives.js",
+    "phase2:setup": "node scripts/setup-phase2-v2.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.22.2",
+    "googleapis": "^171.4.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.1.0"
+  }
+}

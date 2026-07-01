@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skiline Ads — Campaign Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #2d3436; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px 48px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { margin-top: 6px; color: #a0aec0; font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .kpi { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .kpi .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #718096; }
+  .kpi .value { font-size: 32px; font-weight: 700; margin-top: 8px; color: #1a1a2e; }
+  .kpi .sub { font-size: 12px; color: #a0aec0; margin-top: 4px; }
+  .kpi.green .value { color: #00b894; }
+  .kpi.red .value { color: #d63031; }
+  .section { background: white; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; }
+  .section h2 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f5f6fa; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; background: #f8f9fc; color: #718096; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 12px 14px; border-bottom: 1px solid #f5f6fa; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.active { background: #e8f5e9; color: #2e7d32; }
+  .badge.paused { background: #f5f5f5; color: #757575; }
+  .badge.dead { background: #fce8e8; color: #c62828; }
+  .metric-good { color: #00b894; font-weight: 600; }
+  .metric-warn { color: #e17055; font-weight: 600; }
+  .metric-bad { color: #d63031; font-weight: 600; }
+  .bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .bar { height: 6px; border-radius: 3px; background: #e8eaf6; flex: 1; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6c63ff, #a29bfe); }
+  .bar-fill.green { background: linear-gradient(90deg, #00b894, #55efc4); }
+  .bar-fill.red { background: linear-gradient(90deg, #d63031, #ff7675); }
+  .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .insight { background: #f8f9fc; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #6c63ff; }
+  .insight.warn { border-left-color: #e17055; }
+  .insight.good { border-left-color: #00b894; }
+  .insight.bad { border-left-color: #d63031; }
+  .insight h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .insight p { font-size: 12px; color: #636e72; line-height: 1.5; }
+  .action-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f5f6fa; }
+  .action-item:last-child { border-bottom: none; }
+  .action-num { width: 24px; height: 24px; border-radius: 50%; background: #6c63ff; color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .action-text h4 { font-size: 13px; font-weight: 700; }
+  .action-text p { font-size: 12px; color: #636e72; margin-top: 3px; line-height: 1.4; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .report-date { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+  .highlight-row td { background: #fffbf0 !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Skiline Recruitment — Meta Ads Report</h1>
+  <p class="report-date">Chennai | All-time performance as of June 2026</p>
+</div>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Total Spend</div>
+      <div class="value">₹11,058</div>
+      <div class="sub">Across all campaigns</div>
+    </div>
+    <div class="kpi green">
+      <div class="label">Total Leads</div>
+      <div class="value">606</div>
+      <div class="sub">Retirees + Housewives</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Blended CPL</div>
+      <div class="value">₹18.2</div>
+      <div class="sub">Cost per lead</div>
+    </div>
+    <div class="kpi red">
+      <div class="label">Wasted Spend</div>
+      <div class="value">₹1,061</div>
+      <div class="sub">2M campaign — 0 leads</div>
+    </div>
+  </div>
+
+  <!-- Adset Performance -->
+  <div class="section">
+    <h2>Adset Performance — All Time</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Adset</th>
+          <th>Status</th>
+          <th>Spend</th>
+          <th>Leads</th>
+          <th>CPL</th>
+          <th>CPM</th>
+          <th>CTR</th>
+          <th>Lead Volume</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Housewives Chennai</strong> <span style="font-size:11px;color:#a0aec0">Broad</span></td>
+          <td><span class="badge paused">⏸ Paused</span></td>
+          <td>₹4,741</td>
+          <td>341</td>
+          <td class="metric-good">₹13.9</td>
+          <td>₹158</td>
+          <td class="metric-good">4.76%</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill green" style="width:100%"></div></div>
+              <span style="font-size:11px;color:#718096">341</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Retired Chennai</strong> <span style="font-size:11px;color:#a0aec0">Broad</span></td>
+          <td><span class="badge active">▶ Active</span></td>
+          <td>₹4,596</td>
+          <td>241</td>
+          <td class="metric-good">₹19.1</td>
+          <td>₹125</td>
+          <td>3.75%</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill green" style="width:71%"></div></div>
+              <span style="font-size:11px;color:#718096">241</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Retired — Ashok Nagar</strong> <span style="font-size:11px;color:#a0aec0">AB Test</span></td>
+          <td><span class="badge active">▶ Active</span></td>
+          <td>₹450</td>
+          <td>18</td>
+          <td class="metric-warn">₹25.0</td>
+          <td>₹145</td>
+          <td>3.09%</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill" style="width:5%"></div></div>
+              <span style="font-size:11px;color:#718096">18</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Housewives — Ashok Nagar</strong> <span style="font-size:11px;color:#a0aec0">AB Test</span></td>
+          <td><span class="badge paused">⏸ Paused</span></td>
+          <td>₹211</td>
+          <td>6</td>
+          <td class="metric-warn">₹35.2</td>
+          <td>₹168</td>
+          <td>2.31%</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill" style="width:2%"></div></div>
+              <span style="font-size:11px;color:#718096">6</span>
+            </div>
+          </td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>2M Campaign</strong> <span style="font-size:11px;color:#d63031">Dead</span></td>
+          <td><span class="badge dead">⚠ Active / No Adsets</span></td>
+          <td class="metric-bad">₹1,061</td>
+          <td class="metric-bad">0</td>
+          <td class="metric-bad">—</td>
+          <td class="metric-bad">₹8,623</td>
+          <td>2.44%</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill red" style="width:0%"></div></div>
+              <span style="font-size:11px;color:#d63031">₹1,061 wasted</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Weekly Trend + AB Test -->
+  <div class="two-col">
+    <div class="section">
+      <h2>Weekly Spend & Leads Trend</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Week of</th>
+            <th>Spend</th>
+            <th>Leads</th>
+            <th>CPL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mar 17</td><td>₹396</td><td>27</td><td>₹14.7</td></tr>
+          <tr><td>Mar 24</td><td>₹612</td><td>33</td><td>₹18.5</td></tr>
+          <tr><td>Mar 31</td><td>₹804</td><td>51</td><td>₹15.8</td></tr>
+          <tr><td>Apr 7</td><td>₹1,021</td><td>93</td><td>₹11.0</td></tr>
+          <tr class="highlight-row"><td>Apr 14 ⚠</td><td class="metric-bad">₹3,225</td><td>150</td><td class="metric-bad">₹21.5</td></tr>
+          <tr><td>Apr 21</td><td>₹490</td><td>28</td><td>₹17.5</td></tr>
+          <tr><td>May 5</td><td>₹1,286</td><td>59</td><td>₹21.8</td></tr>
+          <tr><td>May 12</td><td>₹1,098</td><td>56</td><td>₹19.6</td></tr>
+          <tr><td>May 19</td><td>₹1,537</td><td>81</td><td class="metric-good">₹19.0</td></tr>
+          <tr><td>May 26</td><td>₹357</td><td>18</td><td>₹19.8</td></tr>
+          <tr><td>Jun 2</td><td>₹233</td><td>10</td><td>₹23.3</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:#a0aec0;margin-top:12px">⚠ Apr 14 spike = ₹1,061 wasted on misconfigured 2M campaign</p>
+    </div>
+
+    <div class="section">
+      <h2>AB Test — Ashok Nagar vs Broad</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>Type</th>
+            <th>CPL</th>
+            <th>CPM</th>
+            <th>CTR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Housewives</td>
+            <td>Broad Chennai</td>
+            <td class="metric-good">₹13.9</td>
+            <td>₹158</td>
+            <td class="metric-good">4.76%</td>
+          </tr>
+          <tr class="highlight-row">
+            <td>Housewives</td>
+            <td>Ashok Nagar</td>
+            <td class="metric-warn">₹35.2</td>
+            <td>₹168</td>
+            <td class="metric-warn">2.31%</td>
+          </tr>
+          <tr>
+            <td>Retirees</td>
+            <td>Broad Chennai</td>
+            <td class="metric-good">₹19.1</td>
+            <td>₹125</td>
+            <td>3.75%</td>
+          </tr>
+          <tr class="highlight-row">
+            <td>Retirees</td>
+            <td>Ashok Nagar</td>
+            <td class="metric-warn">₹25.0</td>
+            <td>₹145</td>
+            <td>3.09%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px">
+        <div class="insight warn">
+          <h4>Ashok Nagar costs more</h4>
+          <p>Retired AN: 31% higher CPL than broad. Housewives AN: 152% higher CPL. Geo restriction increases CPM. Early data (24 leads) — final verdict in 2 more weeks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segment Breakdown -->
+  <div class="section">
+    <h2>Segment Summary</h2>
+    <div class="two-col">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:40px;height:40px;background:#e8f5e9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">👩</div>
+          <div>
+            <div style="font-weight:700;font-size:15px">Housewives</div>
+            <div style="font-size:12px;color:#718096">Ages 30–55, Female, Chennai</div>
+          </div>
+        </div>
+        <table>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Total Spend</td><td style="font-weight:700;text-align:right">₹4,952</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Total Leads</td><td style="font-weight:700;text-align:right">347</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Avg CPL</td><td style="font-weight:700;text-align:right;color:#00b894">₹14.3</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Best CTR</td><td style="font-weight:700;text-align:right;color:#00b894">4.76%</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Current Status</td><td style="text-align:right"><span class="badge paused">⏸ Paused (week 11)</span></td></tr>
+        </table>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:40px;height:40px;background:#e3f2fd;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">👨</div>
+          <div>
+            <div style="font-weight:700;font-size:15px">Retirees</div>
+            <div style="font-size:12px;color:#718096">Ages 45–70, All genders, Chennai</div>
+          </div>
+        </div>
+        <table>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Total Spend</td><td style="font-weight:700;text-align:right">₹5,046</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Total Leads</td><td style="font-weight:700;text-align:right">259</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Avg CPL</td><td style="font-weight:700;text-align:right;color:#00b894">₹19.5</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Best CTR</td><td style="text-align:right">3.75%</td></tr>
+          <tr><td style="color:#718096;font-size:12px;padding:6px 0">Current Status</td><td style="text-align:right"><span class="badge active">▶ Active (week 11)</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="section">
+    <h2>Key Insights</h2>
+    <div class="insight good">
+      <h4>Housewives is the star performer</h4>
+      <p>₹13.9 CPL with 4.76% CTR — best metrics across all adsets. Audience resonates strongly with the creative. Scale-up candidate if budget increases.</p>
+    </div>
+    <div class="insight good">
+      <h4>Efficient overall CPL at ₹18.2</h4>
+      <p>Industry benchmark for employment lead gen in India is ₹50–150. Skiline is running at 3–8x more efficiently. Volume is the main lever to pull.</p>
+    </div>
+    <div class="insight bad">
+      <h4>₹1,061 wasted on 2M campaign</h4>
+      <p>Misconfigured campaign with CPM of ₹8,623 generated 0 leads. Campaign is still active with no adsets — should be deleted to avoid future accidental spend.</p>
+    </div>
+    <div class="insight warn">
+      <h4>Ashok Nagar geo test underperforming</h4>
+      <p>Both AN adsets showing 31–152% higher CPL vs broad. Narrow geo increases CPM without proportional lead quality gain. Full verdict after 2 more weeks of data.</p>
+    </div>
+    <div class="insight">
+      <h4>Lead quality gap is the real problem</h4>
+      <p>606 leads collected, ~1 confirmed conversion. Conversion rate &lt;0.2%. Root causes: "More Volume" form type (no friction), delayed follow-up, broad audience. Not an ads problem — a post-lead process problem.</p>
+    </div>
+  </div>
+
+  <!-- Action Items -->
+  <div class="section">
+    <h2>Action Items</h2>
+    <div class="action-item">
+      <div class="action-num">1</div>
+      <div class="action-text">
+        <h4>Delete the 2M campaign</h4>
+        <p>Still active, no adsets, zero leads, ₹1,061 wasted. Risk of accidental future spend. Low effort, no downside.</p>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">2</div>
+      <div class="action-text">
+        <h4>Switch to Higher Intent lead forms</h4>
+        <p>Current "More Volume" forms have zero friction — pre-filled fields = accidental submissions. Higher Intent adds a review step, cuts volume ~30% but removes junk leads. Improves downstream conversion rate significantly.</p>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">3</div>
+      <div class="action-text">
+        <h4>Build lookalike audience from client converter list</h4>
+        <p>Client has 200+ past converters from newspaper/events/direct outreach. Upload as Custom Audience → create Special Ad Audience. Target people who behave like actual converters, not just form fillers.</p>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">4</div>
+      <div class="action-text">
+        <h4>AB test verdict — 2 weeks</h4>
+        <p>Ashok Nagar adsets currently 31–152% more expensive than broad. If CPL stays 2x+ higher after full data, shut down AN test and redirect ₹200/day entirely to broad adsets.</p>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-num">5</div>
+      <div class="action-text">
+        <h4>Fix lead follow-up speed (off-platform)</h4>
+        <p>Leads contacted within 5 minutes convert 9x better than those contacted after 1 hour. If calls are happening hours/days after submission, this is likely the #1 reason for &lt;0.2% conversion rate.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Setup -->
+  <div class="section">
+    <h2>Current Ad Setup</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ad</th>
+          <th>Adset</th>
+          <th>Segment</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Retired Ad 3 — Not Done</td>
+          <td>Retired Chennai</td>
+          <td>Retirees</td>
+          <td><span class="badge active">▶ Active</span></td>
+        </tr>
+        <tr>
+          <td>Retired Ad 4 — Work From Home</td>
+          <td>Retired Chennai</td>
+          <td>Retirees</td>
+          <td><span class="badge active">▶ Active</span></td>
+        </tr>
+        <tr>
+          <td>Retired Ad — Ashok Nagar Test</td>
+          <td>Retired AN</td>
+          <td>Retirees</td>
+          <td><span class="badge active">▶ Active</span></td>
+        </tr>
+        <tr>
+          <td>Housewives Ad 1 — Skills</td>
+          <td>Housewives Chennai</td>
+          <td>Housewives</td>
+          <td><span class="badge paused">⏸ Paused</span></td>
+        </tr>
+        <tr>
+          <td>Housewives Ad 2 — Back to Work [VAR 2A]</td>
+          <td>Housewives Chennai</td>
+          <td>Housewives</td>
+          <td><span class="badge paused">⏸ Paused</span></td>
+        </tr>
+        <tr>
+          <td>Housewives Ad — Ashok Nagar Test</td>
+          <td>Housewives AN</td>
+          <td>Housewives</td>
+          <td><span class="badge paused">⏸ Paused</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#718096;margin-top:16px">Rotation: Retirees active weeks 11, 13, 15… | Housewives active weeks 12, 14, 16… | Budget: ₹150/day broad + ₹100/day Ashok Nagar per active segment</p>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:#a0aec0;padding:24px 0">Skiline Recruitment — Meta Ads Report · Generated June 2026</p>
+</div>
+</body>
+</html>

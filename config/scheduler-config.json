@@ -1,0 +1,14 @@
+{
+  "daily_sync": {
+    "time": "08:00",
+    "script": "sync-leads-to-sheets.js",
+    "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    "description": "Sync new leads to Google Sheets daily"
+  },
+  "weekly_toggle": {
+    "time": "08:00",
+    "script": "weekly-toggle.js",
+    "day": "Monday",
+    "description": "Switch ad segment (retired ↔ housewives)"
+  }
+}

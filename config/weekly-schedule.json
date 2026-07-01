@@ -1,0 +1,177 @@
+{
+  "current_week": 13,
+  "start_date": "2026-03-23",
+  "custom_audience_id": "120248544239950744",
+  "lookalike_audience_id": "120248543198060744",
+  "lookalike_applied_date": "",
+  "creatives_updated_date": "",
+  "weeks": [
+    {
+      "week": 1,
+      "dates": "Mar 23 - Mar 29, 2026",
+      "active_segment": "housewives",
+      "description": "Week 1: Housewives Focus"
+    },
+    {
+      "week": 2,
+      "dates": "Mar 30 - Apr 05, 2026",
+      "active_segment": "retirees",
+      "description": "Week 2: Retirees Focus"
+    },
+    {
+      "week": 3,
+      "dates": "Apr 06 - Apr 12, 2026",
+      "active_segment": "housewives",
+      "description": "Week 3: Housewives Scale"
+    },
+    {
+      "week": 4,
+      "dates": "Apr 13 - Apr 19, 2026",
+      "active_segment": "retirees",
+      "description": "Week 4: Retirees Scale (MISSED)"
+    },
+    {
+      "week": 5,
+      "dates": "Apr 20 - Apr 26, 2026",
+      "active_segment": "retirees",
+      "description": "Week 5: Retirees Catch-up (Manual Override)"
+    },
+    {
+      "week": 6,
+      "dates": "Apr 27 - May 03, 2026",
+      "active_segment": "housewives",
+      "description": "Week 6: Housewives Rotation"
+    },
+    {
+      "week": 7,
+      "dates": "May 04 - May 10, 2026",
+      "active_segment": "retirees",
+      "description": "Week 7: Retirees Rotation"
+    },
+    {
+      "week": 8,
+      "dates": "May 11 - May 17, 2026",
+      "active_segment": "housewives",
+      "description": "Week 8: Housewives Rotation"
+    },
+    {
+      "week": 9,
+      "dates": "May 18 - May 24, 2026",
+      "active_segment": "retirees",
+      "description": "Week 9: Retirees Rotation"
+    },
+    {
+      "week": 10,
+      "dates": "May 25 - May 31, 2026",
+      "active_segment": "housewives",
+      "description": "Week 10: Housewives Rotation"
+    },
+    {
+      "week": 11,
+      "dates": "Jun 01 - Jun 07, 2026",
+      "active_segment": "retirees",
+      "description": "Week 11: Retirees Rotation"
+    },
+    {
+      "week": 12,
+      "dates": "Jun 08 - Jun 14, 2026",
+      "active_segment": "housewives",
+      "description": "Week 12: Housewives Rotation"
+    },
+    {
+      "week": 13,
+      "dates": "Jun 15 - Jun 21, 2026",
+      "active_segment": "retirees",
+      "description": "Week 13: Retirees Rotation"
+    },
+    {
+      "week": 14,
+      "dates": "Jun 22 - Jun 28, 2026",
+      "active_segment": "housewives",
+      "description": "Week 14: Housewives Rotation"
+    },
+    {
+      "week": 15,
+      "dates": "Jun 29 - Jul 05, 2026",
+      "active_segment": "retirees",
+      "description": "Week 15: Retirees Rotation"
+    },
+    {
+      "week": 16,
+      "dates": "Jul 06 - Jul 12, 2026",
+      "active_segment": "housewives",
+      "description": "Week 16: Housewives Rotation"
+    },
+    {
+      "week": 17,
+      "dates": "Jul 13 - Jul 19, 2026",
+      "active_segment": "retirees",
+      "description": "Week 17: Retirees Rotation"
+    },
+    {
+      "week": 18,
+      "dates": "Jul 20 - Jul 26, 2026",
+      "active_segment": "housewives",
+      "description": "Week 18: Housewives Rotation"
+    },
+    {
+      "week": 19,
+      "dates": "Jul 27 - Aug 02, 2026",
+      "active_segment": "retirees",
+      "description": "Week 19: Retirees Rotation"
+    },
+    {
+      "week": 20,
+      "dates": "Aug 03 - Aug 09, 2026",
+      "active_segment": "housewives",
+      "description": "Week 20: Housewives Rotation"
+    }
+  ],
+  "ad_group_ids": {
+    "housewives": {
+      "adset_id": "120248587937010744",
+      "adset_name": "Skiline – Housewives – Phase 2",
+      "form_id": "1209496811207023",
+      "ads": [
+        {
+          "name": "Skiline – Housewives – Phase 2",
+          "id": "120248587937800744"
+        }
+      ]
+    },
+    "retirees": {
+      "adset_id": "120248587937540744",
+      "adset_name": "Skiline – Retirees – Phase 2",
+      "form_id": "2370602070099137",
+      "ads": [
+        {
+          "name": "Skiline – Retirees – Phase 2",
+          "id": "120248587938210744"
+        }
+      ]
+    },
+    "retirees_broad": {
+      "adset_id": "120249174335980744",
+      "adset_name": "Skiline – Retirees – Broad (No Lookalike)",
+      "form_id": "2370602070099137",
+      "ads": [
+        {
+          "name": "Skiline – Retirees – Broad (No Lookalike)",
+          "id": "120249174338670744"
+        }
+      ]
+    },
+    "housewives_broad": {
+      "adset_id": "120249174340360744",
+      "adset_name": "Skiline – Housewives – Broad (No Lookalike)",
+      "form_id": "1209496811207023",
+      "ads": [
+        {
+          "name": "Skiline – Housewives – Broad (No Lookalike)",
+          "id": "120249174342350744"
+        }
+      ]
+    }
+  },
+  "phase2_campaign_id": "120248587929600744"
+}
