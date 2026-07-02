@@ -17,9 +17,13 @@ const APP_SECRET   = process.env.META_APP_SECRET;
 const BASE         = 'https://graph.facebook.com/v19.0';
 
 // Google Sheets — support env var (Railway) or local file (dev)
-const sa = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-  ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
-  : JSON.parse(fs.readFileSync(path.join(__dirname, 'config', 'service-account.json'), 'utf8'));
+console.log('SA env var present:', !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON, '| length:', process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.length || 0);
+let sa;
+if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+  sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+} else {
+  sa = JSON.parse(fs.readFileSync(path.join(__dirname, 'config', 'service-account.json'), 'utf8'));
+}
 
 const auth   = new google.auth.GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
 const sheets = google.sheets({ version: 'v4', auth });
