@@ -84,8 +84,7 @@ function normalizePhone(raw) {
 }
 
 function toIST(isoStr) {
-  const d = new Date(new Date(isoStr).getTime() + 5.5 * 3600000);
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
+  return new Date(isoStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata' });
 }
 
 async function syncSheet(sheetName, leads) {
