@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "leads:pull": "node scripts/pull-leads.js",
-    "leads:sync": "node scripts/sync-leads.js",
+    "leads:sync": "node scripts/sync-all-leads.js",
     "toggle": "node scripts/weekly-toggle.js",
     "toggle:dry": "node scripts/weekly-toggle.js --dry-run",
     "analyze:local": "node scripts/analyze-local.js",

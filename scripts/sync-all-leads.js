@@ -46,7 +46,7 @@ async function fetchAllLeads() {
 
     console.log(`  ${form.name} → ${sheet} (${form.leads_count} leads)`);
 
-    let url = `${BASE}/${form.id}/leads?fields=created_time,field_data&limit=1000&access_token=${pt}`;
+    let url = `${BASE}/${form.id}/leads?fields=created_time,field_data,ad_name,ad_id&limit=1000&access_token=${pt}`;
     while (url) {
       const page = await fetch(url).then(r => r.json());
       if (page.error) { console.error('  Lead fetch error:', page.error.message); break; }
@@ -58,6 +58,7 @@ async function fetchAllLeads() {
           name:  f.full_name  || f.name  || 'N/A',
           phone: f.phone_number || f.phone || 'N/A',
           email: f.email || 'N/A',
+          adName: lead.ad_name || '',
         });
       }
       url = page.paging?.next || null;
@@ -115,12 +116,28 @@ async function syncSheet(sheetName, leads) {
     return [startIdx + i, toIST(l.time), l.name, phone, l.email, '', '', '']; // cols: #,Date,Name,Phone,Email,Remarks,Rating,Notes
   });
 
-  await sheets.spreadsheets.values.append({
+  const appendRes = await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
     range: `${sheetName}!A:H`,
     valueInputOption: 'RAW',
     resource: { values: rows },
   });
+
+  // Stamp source ad into column K, aligned to the exact rows just appended.
+  // Separate write so we never disturb existing columns (tabs have differing layouts).
+  const updatedRange = appendRes.data.updates?.updatedRange || ''; // e.g. "Housewives!A825:H842"
+  const m = updatedRange.match(/![A-Z]+(\d+):[A-Z]+(\d+)/);
+  if (m) {
+    const startRow = parseInt(m[1]);
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `${sheetName}!M${startRow}:M${startRow + newLeads.length - 1}`,
+      valueInputOption: 'RAW',
+      resource: { values: newLeads.map(l => [l.adName || '']) },
+    });
+  } else {
+    console.warn(`  ${sheetName}: could not parse append range "${updatedRange}" — source ad not stamped`);
+  }
 
   console.log(`  ${sheetName}: +${newLeads.length} new leads (was ${countBefore})`);
   return newLeads.length;

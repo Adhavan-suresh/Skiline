@@ -17,6 +17,7 @@ const VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'skiline-webhook-2026';
 const SHEET_ID     = '1jyNnRjklz6wqz-QLqhpWMmy-bGG7_yddyUmm6vrTr6Y';
 const BASE         = 'https://graph.facebook.com/v19.0';
 const SOURCE_COL   = 'M'; // first column empty on all three tabs
+const LEADID_COL   = 'N'; // stores the Meta leadgen_id — guards against Meta's at-least-once webhook retries
 
 // ── Google Sheets client (service account from env var — Vercel has no files) ──
 const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
@@ -65,10 +66,16 @@ async function processLead(leadgenId, formId) {
   const phone = normalizePhone(f.phone_number || f.phone);
   if (!phone) { console.log('No phone — skip'); return; }
 
-  const [existing, countRes] = await Promise.all([
+  const [existing, countRes, leadIdRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!D:D` }),
     sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!A:A` }),
+    sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!${LEADID_COL}:${LEADID_COL}` }),
   ]);
+  // Meta guarantees at-least-once delivery — the same leadgen_id can arrive twice (retries).
+  // Check that first: it's an exact-event match, unlike phone (which two different people could share).
+  const seenLeadIds = new Set((leadIdRes.data.values || []).flat().filter(Boolean));
+  if (seenLeadIds.has(String(leadgenId))) { console.log(`Dup event ${leadgenId} in ${sheetName} — skip`); return; }
+
   const phones = new Set((existing.data.values || []).slice(1).map(r => normalizePhone(r[0])).filter(Boolean));
   if (phones.has(phone)) { console.log(`Dup ${phone} in ${sheetName} — skip`); return; }
 
@@ -80,15 +87,15 @@ async function processLead(leadgenId, formId) {
     resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
   });
 
-  // stamp source ad into col M on the exact appended row (separate write — tabs differ)
+  // stamp source ad + leadgen_id on the exact appended row (separate write — tabs differ)
   const m = (appendRes.data.updates?.updatedRange || '').match(/![A-Z]+(\d+):/);
   if (m) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${sheetName}!${SOURCE_COL}${m[1]}`,
+      range: `${sheetName}!${SOURCE_COL}${m[1]}:${LEADID_COL}${m[1]}`,
       valueInputOption: 'RAW',
-      resource: { values: [[lead.ad_name || '']] },
-    }).catch(e => console.error('source-ad stamp failed:', e.message));
+      resource: { values: [[lead.ad_name || '', String(leadgenId)]] },
+    }).catch(e => console.error('source-ad/leadid stamp failed:', e.message));
   }
   console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }

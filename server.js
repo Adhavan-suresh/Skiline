@@ -61,7 +61,7 @@ async function processLead(leadgenId, formId) {
   const pt = await getPageToken();
 
   const [lead, form] = await Promise.all([
-    fetch(`${BASE}/${leadgenId}?fields=field_data,created_time&access_token=${pt}`).then(r => r.json()),
+    fetch(`${BASE}/${leadgenId}?fields=field_data,created_time,ad_name,ad_id&access_token=${pt}`).then(r => r.json()),
     fetch(`${BASE}/${formId}?fields=name&access_token=${pt}`).then(r => r.json()),
   ]);
 
@@ -88,14 +88,25 @@ async function processLead(leadgenId, formId) {
 
   const nextRow = countRes.data.values?.length || 1;
 
-  await sheets.spreadsheets.values.append({
+  const appendRes = await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
     range: `${sheetName}!A:H`,
     valueInputOption: 'RAW',
     resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
   });
 
-  console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone}`);
+  // Stamp source ad into column K on the exact row just appended (separate write — tabs have differing layouts)
+  const m = (appendRes.data.updates?.updatedRange || '').match(/![A-Z]+(\d+):/);
+  if (m) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `${sheetName}!M${m[1]}`,
+      valueInputOption: 'RAW',
+      resource: { values: [[lead.ad_name || '']] },
+    }).catch(e => console.error('  source-ad stamp failed:', e.message));
+  }
+
+  console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }
 
 const app = express();
