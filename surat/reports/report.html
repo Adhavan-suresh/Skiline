@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; background: #fff; padding: 40px; max-width: 900px; margin: auto; }
+  .header { border-bottom: 3px solid #1877F2; padding-bottom: 16px; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; color: #1877F2; font-weight: 700; }
+  .header p { font-size: 13px; color: #666; margin-top: 4px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #1877F2; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin-bottom: 12px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
+  .kpi { background: #f5f7fa; border-radius: 8px; padding: 14px 16px; }
+  .kpi .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .kpi .value { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 2px; }
+  .kpi.highlight { background: #1877F2; }
+  .kpi.highlight .label { color: rgba(255,255,255,0.7); }
+  .kpi.highlight .value { color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #f0f4ff; }
+  th { padding: 9px 12px; text-align: left; font-weight: 600; color: #444; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  .tag-green { background: #e6f9f0; color: #1a9e5c; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-yellow { background: #fff8e6; color: #b07d00; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-red { background: #fdecea; color: #c0392b; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-grey { background: #f0f0f0; color: #888; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .intent-bar { display: flex; gap: 0; height: 28px; border-radius: 6px; overflow: hidden; margin: 8px 0 4px; }
+  .bar-green { background: #1a9e5c; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+  .bar-yellow { background: #f0a500; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+  .bar-grey { background: #bbb; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .note { background: #fff8e6; border-left: 3px solid #f0a500; padding: 10px 14px; font-size: 12px; color: #555; border-radius: 0 6px 6px 0; margin-top: 8px; }
+  .rec { background: #e6f9f0; border-left: 3px solid #1a9e5c; padding: 10px 14px; font-size: 12px; color: #333; border-radius: 0 6px 6px 0; }
+  .footer { margin-top: 32px; border-top: 1px solid #e0e0e0; padding-top: 12px; font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Skiline Recruitment — Surat Leaders Campaign</h1>
+  <p>Meta Lead Generation Report &nbsp;|&nbsp; Jun 12 – Jun 21, 2026 &nbsp;|&nbsp; Prepared Jun 21, 2026</p>
+</div>
+
+<!-- KPIs -->
+<div class="section">
+  <div class="section-title">Key Metrics — All Time</div>
+  <div class="kpi-grid">
+    <div class="kpi highlight"><div class="label">Total Leads</div><div class="value">31</div></div>
+    <div class="kpi highlight"><div class="label">Cost Per Lead</div><div class="value">₹31.26</div></div>
+    <div class="kpi"><div class="label">Total Spend</div><div class="value">₹969</div></div>
+    <div class="kpi"><div class="label">Unique Reach</div><div class="value">2,569</div></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="label">Impressions</div><div class="value">3,482</div></div>
+    <div class="kpi"><div class="label">Link Clicks</div><div class="value">145</div></div>
+    <div class="kpi"><div class="label">CTR</div><div class="value">4.16%</div></div>
+    <div class="kpi"><div class="label">CPM</div><div class="value">₹278</div></div>
+  </div>
+</div>
+
+<!-- Daily -->
+<div class="section">
+  <div class="section-title">Daily Performance</div>
+  <table>
+    <thead><tr><th>Date</th><th>Spend</th><th>Impressions</th><th>Reach</th><th>Leads</th><th>CPL</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Jun 12</td><td>₹77</td><td>497</td><td>471</td><td>5</td><td>₹15</td><td><span class="tag-green">Excellent</span></td></tr>
+      <tr><td>Jun 13</td><td>₹93</td><td>541</td><td>513</td><td>6</td><td>₹15</td><td><span class="tag-green">Excellent</span></td></tr>
+      <tr><td>Jun 14</td><td>₹142</td><td>399</td><td>350</td><td>3</td><td>₹47</td><td><span class="tag-yellow">Learning</span></td></tr>
+      <tr><td>Jun 15</td><td>₹57</td><td>224</td><td>212</td><td>2</td><td>₹29</td><td><span class="tag-yellow">Partial</span></td></tr>
+      <tr><td>Jun 16–17</td><td>—</td><td>—</td><td>—</td><td>0</td><td>—</td><td><span class="tag-grey">Paused</span></td></tr>
+      <tr><td>Jun 18</td><td>₹158</td><td>482</td><td>439</td><td>1</td><td>₹158</td><td><span class="tag-red">Re-learning</span></td></tr>
+      <tr><td>Jun 19</td><td>₹163</td><td>549</td><td>463</td><td>5</td><td>₹33</td><td><span class="tag-yellow">Recovering</span></td></tr>
+      <tr><td>Jun 20</td><td>₹165</td><td>536</td><td>488</td><td>6</td><td>₹27</td><td><span class="tag-green">Good</span></td></tr>
+      <tr><td>Jun 21</td><td>₹115</td><td>254</td><td>228</td><td>3</td><td>₹38</td><td><span class="tag-yellow">Ongoing</span></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Jun 16–17 zero delivery: campaign end-date expired. Jun 18 high CPL: Meta re-entered learning phase after restart.</div>
+</div>
+
+<!-- Intent + Benchmark -->
+<div class="section two-col">
+  <div>
+    <div class="section-title">Lead Intent Quality</div>
+    <div class="intent-bar">
+      <div class="bar-green" style="width:74%">74% Immediately</div>
+      <div class="bar-yellow" style="width:19%">19%</div>
+      <div class="bar-grey" style="width:7%">7%</div>
+    </div>
+    <table>
+      <thead><tr><th>Intent</th><th>Leads</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td>Immediately</td><td>23</td><td><span class="tag-green">74%</span></td></tr>
+        <tr><td>Within 3 months</td><td>6</td><td><span class="tag-yellow">19%</span></td></tr>
+        <tr><td>Just exploring</td><td>2</td><td><span class="tag-grey">6%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <div class="section-title">Benchmark vs Chennai</div>
+    <table>
+      <thead><tr><th>Metric</th><th>Surat</th><th>Chennai</th></tr></thead>
+      <tbody>
+        <tr><td>CPL</td><td>₹31.26</td><td>₹18.20</td></tr>
+        <tr><td>CTR</td><td>4.16%</td><td>—</td></tr>
+        <tr><td>Budget/day</td><td>₹100</td><td>₹200</td></tr>
+        <tr><td>Days active</td><td>8</td><td>90+</td></tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:10px">Surat CPL higher due to smaller budget and two learning resets. Chennai took 3–4 weeks to reach ₹18 CPL.</div>
+  </div>
+</div>
+
+<!-- Campaign Details -->
+<div class="section">
+  <div class="section-title">Campaign Setup</div>
+  <table>
+    <tbody>
+      <tr><td style="width:180px;color:#888;font-size:12px">Campaign</td><td>Skiline Recruitment — Surat — Leaders</td></tr>
+      <tr><td style="color:#888;font-size:12px">Platform</td><td>Meta (Facebook & Instagram)</td></tr>
+      <tr><td style="color:#888;font-size:12px">Objective</td><td>Lead Generation</td></tr>
+      <tr><td style="color:#888;font-size:12px">Targeting</td><td>Surat district, Age 28–55, All genders, Broad audience</td></tr>
+      <tr><td style="color:#888;font-size:12px">Daily Budget</td><td>₹100/day</td></tr>
+      <tr><td style="color:#888;font-size:12px">Creative</td><td>Leaders.png — single image lead ad</td></tr>
+      <tr><td style="color:#888;font-size:12px">Status</td><td><span class="tag-green">Active</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Recommendation -->
+<div class="section">
+  <div class="section-title">Recommendation</div>
+  <div class="rec">
+    <strong>Scale to ₹200/day and run uninterrupted for 2 weeks.</strong><br><br>
+    Days 1–2 delivered ₹15 CPL — among the best early results for any city. The campaign was disrupted by an accidental end-date expiry which reset Meta's learning and inflated costs. With consistent spend at ₹200/day, CPL is projected to stabilize at ₹18–22 within 10 days, matching Chennai's steady-state performance. 74% of leads expressing immediate intent confirms strong audience-market fit for Surat.
+  </div>
+</div>
+
+<div class="footer">
+  <span>Skiline Recruitment | Surat Leaders Campaign</span>
+  <span>Generated Jun 21, 2026</span>
+</div>
+
+</body>
+</html>

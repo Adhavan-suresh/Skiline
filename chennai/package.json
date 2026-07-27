@@ -1,0 +1,31 @@
+{
+  "name": "skiline-ads",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Meta Ads management for Skiline Recruitment",
+  "scripts": {
+    "start": "node server.js",
+    "leads:pull": "node scripts/lead-sync/pull-leads.js",
+    "leads:sync": "node scripts/lead-sync/sync-all-leads.js",
+    "toggle": "node scripts/campaign-ops/weekly-toggle.js",
+    "toggle:dry": "node scripts/campaign-ops/weekly-toggle.js --dry-run",
+    "analyze:local": "node scripts/reporting/analyze-local.js",
+    "audience:upload": "node scripts/audience/upload-audience.js",
+    "audience:lookalike": "node scripts/audience/create-lookalike.js",
+    "audience:analyze": "node scripts/audience/analyze-audience.js",
+    "audience:apply:dry": "node scripts/audience/apply-lookalike.js --dry-run",
+    "audience:apply": "node scripts/audience/apply-lookalike.js",
+    "creatives:dry": "node scripts/campaign-ops/update-creatives.js --dry-run",
+    "creatives:update": "node scripts/campaign-ops/update-creatives.js",
+    "phase2:setup": "node scripts/campaign-ops/setup-phase2-v2.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.22.2",
+    "googleapis": "^171.4.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.1.0"
+  }
+}
