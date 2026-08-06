@@ -18,10 +18,15 @@ const auth = new google.auth.GoogleAuth({ credentials: sa, scopes: ['https://www
 const sheets = google.sheets({ version: 'v4', auth });
 
 // Route form name → sheet tab
+// City checks MUST precede the generic 'leader' check — every Leaders form name
+// contains "Leaders", so matching that first would pull Thoraipakkam and
+// Hyderabad leads into the Surat tab.
 function routeToSheet(formName) {
   const n = (formName || '').toLowerCase();
-  if (n.includes('surat') || n.includes('leader'))   return 'Surat';
-  if (n.includes('retir'))                            return 'Retirees';
+  if (n.includes('thoraipakkam'))                        return 'Thoraipakkam';
+  if (n.includes('hyderabad'))                           return 'Hyderabad';
+  if (n.includes('surat') || n.includes('leader'))       return 'Surat';
+  if (n.includes('retir'))                                return 'Retirees';
   if (n.includes('housewiv') || n.includes('homemaker')) return 'Housewives';
   return null; // unknown form — skip
 }
@@ -37,7 +42,7 @@ async function fetchAllLeads() {
 
   console.log(`Found ${formsData.data.length} lead forms`);
 
-  const bySheet = { Housewives: [], Retirees: [], Surat: [] };
+  const bySheet = { Housewives: [], Retirees: [], Surat: [], Thoraipakkam: [], Hyderabad: [] };
 
   for (const form of formsData.data) {
     const sheet = routeToSheet(form.name);

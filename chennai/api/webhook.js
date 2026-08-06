@@ -24,9 +24,14 @@ const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
 const auth = new google.auth.GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
 const sheets = google.sheets({ version: 'v4', auth });
 
+// City checks MUST come before the generic 'leader' check — every Leaders form
+// name contains "Leaders", so an earlier 'leader' match would swallow
+// Thoraipakkam and Hyderabad leads into the Surat tab.
 function routeToSheet(formName) {
   const n = (formName || '').toLowerCase();
-  if (n.includes('surat') || n.includes('leader'))          return 'Surat';
+  if (n.includes('thoraipakkam'))                            return 'Thoraipakkam';
+  if (n.includes('hyderabad'))                               return 'Hyderabad';
+  if (n.includes('surat') || n.includes('leader'))           return 'Surat';
   if (n.includes('retir'))                                   return 'Retirees';
   if (n.includes('housewiv') || n.includes('homemaker'))     return 'Housewives';
   return null;
