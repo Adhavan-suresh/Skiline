@@ -1,0 +1,28 @@
+name: Meta balance check
+
+# Prepaid ad account: funds run down and delivery stops at zero. At ~₹600/day
+# spend the ₹500 alert threshold is under a day of runway, so this has to run
+# more often than daily.
+on:
+  schedule:
+    - cron: '17 */3 * * *'   # every 3 hours (offset off the hour to dodge scheduler congestion)
+  workflow_dispatch:          # lets us run it manually to test
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check balance and alert
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          AD_ACCOUNT_ID: ${{ secrets.AD_ACCOUNT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          BALANCE_THRESHOLD: '500'
+        run: node chennai/scripts/reporting/check-balance.js
