@@ -51,19 +51,28 @@ async function fetchAllLeads() {
 
     console.log(`  ${form.name} → ${sheet} (${form.leads_count} leads)`);
 
-    let url = `${BASE}/${form.id}/leads?fields=created_time,field_data,ad_name,ad_id&limit=1000&access_token=${pt}`;
+    let url = `${BASE}/${form.id}/leads?fields=id,created_time,field_data,ad_name,ad_id&limit=1000&access_token=${pt}`;
     while (url) {
       const page = await fetch(url).then(r => r.json());
       if (page.error) { console.error('  Lead fetch error:', page.error.message); break; }
       for (const lead of page.data || []) {
         const f = {};
         for (const fd of lead.field_data) f[fd.name] = fd.values[0];
+        // Any non-standard field is a custom qualifying question's answer. Matched
+        // by exclusion so a form can change its question without editing this.
+        const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email']);
+        const qualifier = lead.field_data
+          .filter(fd => !STANDARD.has(fd.name))
+          .map(fd => fd.values[0])
+          .join(' | ');
         bySheet[sheet].push({
           time:  lead.created_time,
           name:  f.full_name  || f.name  || 'N/A',
           phone: f.phone_number || f.phone || 'N/A',
           email: f.email || 'N/A',
           adName: lead.ad_name || '',
+          leadId: lead.id || '',
+          qualifier,
         });
       }
       url = page.paging?.next || null;
@@ -128,17 +137,19 @@ async function syncSheet(sheetName, leads) {
     resource: { values: rows },
   });
 
-  // Stamp source ad into column K, aligned to the exact rows just appended.
-  // Separate write so we never disturb existing columns (tabs have differing layouts).
+  // Stamp source ad (M), leadgen id (N) and qualifier answer (O) into the exact
+  // rows just appended. Separate write so we never disturb existing columns
+  // (tabs have differing layouts). Only ever touches freshly appended rows, so
+  // writing a blank N or O here cannot clobber anything the webhook already set.
   const updatedRange = appendRes.data.updates?.updatedRange || ''; // e.g. "Housewives!A825:H842"
   const m = updatedRange.match(/![A-Z]+(\d+):[A-Z]+(\d+)/);
   if (m) {
     const startRow = parseInt(m[1]);
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${sheetName}!M${startRow}:M${startRow + newLeads.length - 1}`,
+      range: `${sheetName}!M${startRow}:O${startRow + newLeads.length - 1}`,
       valueInputOption: 'RAW',
-      resource: { values: newLeads.map(l => [l.adName || '']) },
+      resource: { values: newLeads.map(l => [l.adName || '', l.leadId || '', l.qualifier || '']) },
     });
   } else {
     console.warn(`  ${sheetName}: could not parse append range "${updatedRange}" — source ad not stamped`);

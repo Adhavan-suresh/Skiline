@@ -18,6 +18,7 @@ const SHEET_ID     = '1jyNnRjklz6wqz-QLqhpWMmy-bGG7_yddyUmm6vrTr6Y';
 const BASE         = 'https://graph.facebook.com/v19.0';
 const SOURCE_COL   = 'M'; // first column empty on all three tabs
 const LEADID_COL   = 'N'; // stores the Meta leadgen_id — guards against Meta's at-least-once webhook retries
+const QUALIFIER_COL = 'O'; // answer to the lead form's qualifying question, where the form has one
 
 // ── Google Sheets client (service account from env var — Vercel has no files) ──
 const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
@@ -71,6 +72,15 @@ async function processLead(leadgenId, formId) {
   const phone = normalizePhone(f.phone_number || f.phone);
   if (!phone) { console.log('No phone — skip'); return; }
 
+  // Any non-standard field is a custom qualifying question's answer. Matching by
+  // exclusion rather than by key means a future form can change its question
+  // without this needing an edit.
+  const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email']);
+  const qualifier = lead.field_data
+    .filter(fd => !STANDARD.has(fd.name))
+    .map(fd => fd.values[0])
+    .join(' | ');
+
   const [existing, countRes, leadIdRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!D:D` }),
     sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!A:A` }),
@@ -92,15 +102,16 @@ async function processLead(leadgenId, formId) {
     resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
   });
 
-  // stamp source ad + leadgen_id on the exact appended row (separate write — tabs differ)
+  // stamp source ad + leadgen_id + qualifier answer on the exact appended row
+  // (separate write — tabs differ). Forms without a qualifying question leave O blank.
   const m = (appendRes.data.updates?.updatedRange || '').match(/![A-Z]+(\d+):/);
   if (m) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${sheetName}!${SOURCE_COL}${m[1]}:${LEADID_COL}${m[1]}`,
+      range: `${sheetName}!${SOURCE_COL}${m[1]}:${QUALIFIER_COL}${m[1]}`,
       valueInputOption: 'RAW',
-      resource: { values: [[lead.ad_name || '', String(leadgenId)]] },
-    }).catch(e => console.error('source-ad/leadid stamp failed:', e.message));
+      resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier]] },
+    }).catch(e => console.error('source-ad/leadid/qualifier stamp failed:', e.message));
   }
   console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }
