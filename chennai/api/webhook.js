@@ -19,6 +19,8 @@ const BASE         = 'https://graph.facebook.com/v19.0';
 const SOURCE_COL   = 'M'; // first column empty on all three tabs
 const LEADID_COL   = 'N'; // stores the Meta leadgen_id — guards against Meta's at-least-once webhook retries
 const QUALIFIER_COL = 'O'; // answer to the lead form's qualifying question, where the form has one
+const GENDER_COL    = 'P'; // Founders Office form only
+const DOB_COL       = 'Q'; // Founders Office form only
 
 // ── Google Sheets client (service account from env var — Vercel has no files) ──
 const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
@@ -30,6 +32,7 @@ const sheets = google.sheets({ version: 'v4', auth });
 // Thoraipakkam and Hyderabad leads into the Surat tab.
 function routeToSheet(formName) {
   const n = (formName || '').toLowerCase();
+  if (n.includes('founders office') || n.includes("founder's office")) return 'Founders Office';
   if (n.includes('thoraipakkam'))                            return 'Thoraipakkam';
   if (n.includes('hyderabad'))                               return 'Hyderabad';
   if (n.includes('surat') || n.includes('leader'))           return 'Surat';
@@ -72,14 +75,24 @@ async function processLead(leadgenId, formId) {
   const phone = normalizePhone(f.phone_number || f.phone);
   if (!phone) { console.log('No phone — skip'); return; }
 
-  // Any non-standard field is a custom qualifying question's answer. Matching by
-  // exclusion rather than by key means a future form can change its question
-  // without this needing an edit.
-  const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email']);
+  // Any non-standard, non-demographic field is a custom qualifying question's
+  // answer. Matching by exclusion rather than by key means a future form can
+  // change its question without this needing an edit.
+  const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email', 'gender', 'date_of_birth']);
   const qualifier = lead.field_data
     .filter(fd => !STANDARD.has(fd.name))
     .map(fd => fd.values[0])
     .join(' | ');
+
+  // Founders Office only: the operational tracking sheet for this specific role
+  // is scoped to the stated hiring criterion (female candidates) — a lead whose
+  // gender doesn't match isn't written to THIS sheet. Meta's own Lead Center
+  // retains every submission regardless, unaffected by this check — nothing is
+  // deleted, this only controls what gets copied into this one derivative tab.
+  if (sheetName === 'Founders Office' && (f.gender || '').toLowerCase() !== 'female') {
+    console.log(`Founders Office: non-female lead (${f.gender || 'unknown'}) — not copied to sheet, remains in Meta Lead Center`);
+    return;
+  }
 
   const [existing, countRes, leadIdRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!D:D` }),
@@ -102,16 +115,16 @@ async function processLead(leadgenId, formId) {
     resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
   });
 
-  // stamp source ad + leadgen_id + qualifier answer on the exact appended row
-  // (separate write — tabs differ). Forms without a qualifying question leave O blank.
+  // stamp source ad + leadgen_id + qualifier + gender + DOB on the exact appended
+  // row (separate write — tabs differ). Forms without these fields leave them blank.
   const m = (appendRes.data.updates?.updatedRange || '').match(/![A-Z]+(\d+):/);
   if (m) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${sheetName}!${SOURCE_COL}${m[1]}:${QUALIFIER_COL}${m[1]}`,
+      range: `${sheetName}!${SOURCE_COL}${m[1]}:${DOB_COL}${m[1]}`,
       valueInputOption: 'RAW',
-      resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier]] },
-    }).catch(e => console.error('source-ad/leadid/qualifier stamp failed:', e.message));
+      resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier, f.gender || '', f.date_of_birth || '']] },
+    }).catch(e => console.error('source-ad/leadid/qualifier/gender/dob stamp failed:', e.message));
   }
   console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }

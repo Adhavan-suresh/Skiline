@@ -23,6 +23,7 @@ const sheets = google.sheets({ version: 'v4', auth });
 // Hyderabad leads into the Surat tab.
 function routeToSheet(formName) {
   const n = (formName || '').toLowerCase();
+  if (n.includes('founders office') || n.includes("founder's office")) return 'Founders Office';
   if (n.includes('thoraipakkam'))                        return 'Thoraipakkam';
   if (n.includes('hyderabad'))                           return 'Hyderabad';
   if (n.includes('surat') || n.includes('leader'))       return 'Surat';
@@ -42,7 +43,7 @@ async function fetchAllLeads() {
 
   console.log(`Found ${formsData.data.length} lead forms`);
 
-  const bySheet = { Housewives: [], Retirees: [], Surat: [], Thoraipakkam: [], Hyderabad: [] };
+  const bySheet = { Housewives: [], Retirees: [], Surat: [], Thoraipakkam: [], Hyderabad: [], 'Founders Office': [] };
 
   for (const form of formsData.data) {
     const sheet = routeToSheet(form.name);
@@ -58,9 +59,18 @@ async function fetchAllLeads() {
       for (const lead of page.data || []) {
         const f = {};
         for (const fd of lead.field_data) f[fd.name] = fd.values[0];
-        // Any non-standard field is a custom qualifying question's answer. Matched
-        // by exclusion so a form can change its question without editing this.
-        const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email']);
+
+        // Founders Office only: this tab is scoped to the stated hiring
+        // criterion for this specific role (female candidates) — a lead whose
+        // gender doesn't match isn't copied into THIS sheet. Meta's own Lead
+        // Center retains every submission regardless of this check; nothing is
+        // deleted, this only controls what gets copied into this derivative tab.
+        if (sheet === 'Founders Office' && (f.gender || '').toLowerCase() !== 'female') continue;
+
+        // Any non-standard, non-demographic field is a custom qualifying
+        // question's answer. Matched by exclusion so a form can change its
+        // question without editing this.
+        const STANDARD = new Set(['full_name', 'name', 'phone_number', 'phone', 'email', 'gender', 'date_of_birth']);
         const qualifier = lead.field_data
           .filter(fd => !STANDARD.has(fd.name))
           .map(fd => fd.values[0])
@@ -73,6 +83,8 @@ async function fetchAllLeads() {
           adName: lead.ad_name || '',
           leadId: lead.id || '',
           qualifier,
+          gender: f.gender || '',
+          dob: f.date_of_birth || '',
         });
       }
       url = page.paging?.next || null;
@@ -137,19 +149,19 @@ async function syncSheet(sheetName, leads) {
     resource: { values: rows },
   });
 
-  // Stamp source ad (M), leadgen id (N) and qualifier answer (O) into the exact
-  // rows just appended. Separate write so we never disturb existing columns
-  // (tabs have differing layouts). Only ever touches freshly appended rows, so
-  // writing a blank N or O here cannot clobber anything the webhook already set.
+  // Stamp source ad (M), leadgen id (N), qualifier (O), gender (P), DOB (Q) into
+  // the exact rows just appended. Separate write so we never disturb existing
+  // columns (tabs have differing layouts). Only ever touches freshly appended
+  // rows, so a blank cell here cannot clobber anything the webhook already set.
   const updatedRange = appendRes.data.updates?.updatedRange || ''; // e.g. "Housewives!A825:H842"
   const m = updatedRange.match(/![A-Z]+(\d+):[A-Z]+(\d+)/);
   if (m) {
     const startRow = parseInt(m[1]);
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${sheetName}!M${startRow}:O${startRow + newLeads.length - 1}`,
+      range: `${sheetName}!M${startRow}:Q${startRow + newLeads.length - 1}`,
       valueInputOption: 'RAW',
-      resource: { values: newLeads.map(l => [l.adName || '', l.leadId || '', l.qualifier || '']) },
+      resource: { values: newLeads.map(l => [l.adName || '', l.leadId || '', l.qualifier || '', l.gender || '', l.dob || '']) },
     });
   } else {
     console.warn(`  ${sheetName}: could not parse append range "${updatedRange}" — source ad not stamped`);
