@@ -107,25 +107,29 @@ async function processLead(leadgenId, formId) {
   const phones = new Set((existing.data.values || []).slice(1).map(r => normalizePhone(r[0])).filter(Boolean));
   if (phones.has(phone)) { console.log(`Dup ${phone} in ${sheetName} — skip`); return; }
 
-  const nextRow = countRes.data.values?.length || 1;
-  const appendRes = await sheets.spreadsheets.values.append({
+  // Explicit target row, not Sheets' auto-detected append range — the append-range
+  // heuristic misfired on the Hyderabad tab (wider native schema than the other
+  // tabs confused its "find the table" logic), landing new rows 7 columns to the
+  // right of A and breaking phone-based dedup for every row after. Computing the
+  // row ourselves and writing with `.update()` removes that ambiguity entirely.
+  const rowCount = countRes.data.values?.length || 1; // includes header row
+  const nextRow = rowCount; // label shown in column A — data rows are 1-indexed after the header
+  const targetRow = rowCount + 1; // physical sheet row to write into
+
+  await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${sheetName}!A:H`,
+    range: `${sheetName}!A${targetRow}:H${targetRow}`,
     valueInputOption: 'RAW',
     resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
   });
 
-  // stamp source ad + leadgen_id + qualifier + gender + DOB on the exact appended
-  // row (separate write — tabs differ). Forms without these fields leave them blank.
-  const m = (appendRes.data.updates?.updatedRange || '').match(/![A-Z]+(\d+):/);
-  if (m) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SHEET_ID,
-      range: `${sheetName}!${SOURCE_COL}${m[1]}:${DOB_COL}${m[1]}`,
-      valueInputOption: 'RAW',
-      resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier, f.gender || '', f.date_of_birth || '']] },
-    }).catch(e => console.error('source-ad/leadid/qualifier/gender/dob stamp failed:', e.message));
-  }
+  // stamp source ad + leadgen_id + qualifier + gender + DOB on that same explicit row.
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `${sheetName}!${SOURCE_COL}${targetRow}:${DOB_COL}${targetRow}`,
+    valueInputOption: 'RAW',
+    resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier, f.gender || '', f.date_of_birth || '']] },
+  }).catch(e => console.error('source-ad/leadid/qualifier/gender/dob stamp failed:', e.message));
   console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }
 

@@ -133,39 +133,38 @@ async function syncSheet(sheetName, leads) {
 
   if (!newLeads.length) { console.log(`  ${sheetName}: 0 new (${countBefore} already in sheet)`); return 0; }
 
-  // Get current row count to number new rows
+  // Explicit target rows, not Sheets' auto-detected append range — the append-
+  // range heuristic misfired on the Hyderabad tab (wider native schema than the
+  // other tabs confused its "find the table" logic), landing new rows 7 columns
+  // to the right of A and breaking phone-based dedup for every row after.
+  // Computing the rows ourselves and writing with `.update()` removes that
+  // ambiguity entirely.
   const countRes = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!A:A` });
-  const startIdx = (countRes.data.values?.length || 1); // 1-based, header is row 1
+  const rowCount = countRes.data.values?.length || 1; // includes header row
+  const startIdx = rowCount; // label shown in column A for the first new row
+  const startRow = rowCount + 1; // physical sheet row for the first new row
 
   const rows = newLeads.map((l, i) => {
     const phone = normalizePhone(l.phone) || 'N/A';
     return [startIdx + i, toIST(l.time), l.name, phone, l.email, '', '', '']; // cols: #,Date,Name,Phone,Email,Remarks,Rating,Notes
   });
 
-  const appendRes = await sheets.spreadsheets.values.append({
+  await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${sheetName}!A:H`,
+    range: `${sheetName}!A${startRow}:H${startRow + newLeads.length - 1}`,
     valueInputOption: 'RAW',
     resource: { values: rows },
   });
 
   // Stamp source ad (M), leadgen id (N), qualifier (O), gender (P), DOB (Q) into
-  // the exact rows just appended. Separate write so we never disturb existing
-  // columns (tabs have differing layouts). Only ever touches freshly appended
-  // rows, so a blank cell here cannot clobber anything the webhook already set.
-  const updatedRange = appendRes.data.updates?.updatedRange || ''; // e.g. "Housewives!A825:H842"
-  const m = updatedRange.match(/![A-Z]+(\d+):[A-Z]+(\d+)/);
-  if (m) {
-    const startRow = parseInt(m[1]);
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SHEET_ID,
-      range: `${sheetName}!M${startRow}:Q${startRow + newLeads.length - 1}`,
-      valueInputOption: 'RAW',
-      resource: { values: newLeads.map(l => [l.adName || '', l.leadId || '', l.qualifier || '', l.gender || '', l.dob || '']) },
-    });
-  } else {
-    console.warn(`  ${sheetName}: could not parse append range "${updatedRange}" — source ad not stamped`);
-  }
+  // the same explicit rows. Separate write so we never disturb existing columns
+  // (tabs have differing layouts).
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range: `${sheetName}!M${startRow}:Q${startRow + newLeads.length - 1}`,
+    valueInputOption: 'RAW',
+    resource: { values: newLeads.map(l => [l.adName || '', l.leadId || '', l.qualifier || '', l.gender || '', l.dob || '']) },
+  });
 
   console.log(`  ${sheetName}: +${newLeads.length} new leads (was ${countBefore})`);
   return newLeads.length;
