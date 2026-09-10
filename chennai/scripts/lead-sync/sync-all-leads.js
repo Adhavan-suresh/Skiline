@@ -114,6 +114,23 @@ function toIST(isoStr) {
   return new Date(isoStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata' });
 }
 
+// Guards against the calling team manually inserting/deleting rows between our
+// read of the row count and our write — re-checks the candidate start row is
+// actually empty in the columns we own (A:E) right before claiming it.
+async function resolveTargetRow(sheetName, candidateRow) {
+  let row = candidateRow;
+  for (let i = 0; i < 25; i++) {
+    const check = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${sheetName}!A${row}:E${row}`,
+    });
+    const vals = check.data.values?.[0] || [];
+    if (vals.every(v => !v || String(v).trim() === '')) return row;
+    row++;
+  }
+  return row;
+}
+
 async function syncSheet(sheetName, leads) {
   if (!leads.length) { console.log(`  ${sheetName}: no leads to sync`); return 0; }
 
@@ -141,17 +158,20 @@ async function syncSheet(sheetName, leads) {
   // ambiguity entirely.
   const countRes = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${sheetName}!A:A` });
   const rowCount = countRes.data.values?.length || 1; // includes header row
-  const startIdx = rowCount; // label shown in column A for the first new row
-  const startRow = rowCount + 1; // physical sheet row for the first new row
+  const startRow = await resolveTargetRow(sheetName, rowCount + 1); // re-verified empty, not just assumed
+  const startIdx = startRow - 1; // label shown in column A for the first new row
 
+  // Only write A:E — the fields this script owns. F onward (caller assignment,
+  // Remarks, Rating) belongs to the calling team; never write into those columns,
+  // even as blanks, so a stale row-count can never clobber their data.
   const rows = newLeads.map((l, i) => {
     const phone = normalizePhone(l.phone) || 'N/A';
-    return [startIdx + i, toIST(l.time), l.name, phone, l.email, '', '', '']; // cols: #,Date,Name,Phone,Email,Remarks,Rating,Notes
+    return [startIdx + i, toIST(l.time), l.name, phone, l.email]; // cols: #,Date,Name,Phone,Email
   });
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${sheetName}!A${startRow}:H${startRow + newLeads.length - 1}`,
+    range: `${sheetName}!A${startRow}:E${startRow + newLeads.length - 1}`,
     valueInputOption: 'RAW',
     resource: { values: rows },
   });

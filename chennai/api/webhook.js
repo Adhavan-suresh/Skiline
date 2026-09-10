@@ -48,6 +48,25 @@ function toIST(isoStr) {
   return new Date(isoStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit', timeZone: 'Asia/Kolkata' });
 }
 
+// Guards against the calling team manually inserting/deleting rows between our
+// read of the row count and our write — re-checks that the candidate row is
+// actually empty in the columns we own (A:E) right before claiming it, and
+// advances past any row that isn't. Cheap: almost always resolves on the first
+// check, only loops when a real collision happened.
+async function resolveTargetRow(sheetName, candidateRow) {
+  let row = candidateRow;
+  for (let i = 0; i < 25; i++) {
+    const check = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${sheetName}!A${row}:E${row}`,
+    });
+    const vals = check.data.values?.[0] || [];
+    if (vals.every(v => !v || String(v).trim() === '')) return row;
+    row++;
+  }
+  return row; // give up looking after 25 rows, use the last candidate anyway
+}
+
 let pageTokenCache = null, pageTokenExpiry = 0;
 async function getPageToken() {
   if (pageTokenCache && Date.now() < pageTokenExpiry) return pageTokenCache;
@@ -113,14 +132,17 @@ async function processLead(leadgenId, formId) {
   // right of A and breaking phone-based dedup for every row after. Computing the
   // row ourselves and writing with `.update()` removes that ambiguity entirely.
   const rowCount = countRes.data.values?.length || 1; // includes header row
-  const nextRow = rowCount; // label shown in column A — data rows are 1-indexed after the header
-  const targetRow = rowCount + 1; // physical sheet row to write into
+  const targetRow = await resolveTargetRow(sheetName, rowCount + 1); // re-verified empty, not just assumed
+  const nextRow = targetRow - 1; // label shown in column A
 
+  // Only write A:E — the fields this script owns. F onward (caller assignment,
+  // Remarks, Rating) belongs to the calling team; never write into those columns,
+  // even as blanks, so a stale row-count can never clobber their data.
   await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${sheetName}!A${targetRow}:H${targetRow}`,
+    range: `${sheetName}!A${targetRow}:E${targetRow}`,
     valueInputOption: 'RAW',
-    resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A', '', '', '']] },
+    resource: { values: [[nextRow, toIST(lead.created_time), f.full_name || f.name || 'N/A', phone, f.email || 'N/A']] },
   });
 
   // stamp source ad + leadgen_id + qualifier + gender + DOB on that same explicit row.
