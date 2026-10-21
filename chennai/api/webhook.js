@@ -21,6 +21,7 @@ const LEADID_COL   = 'N'; // stores the Meta leadgen_id — guards against Meta'
 const QUALIFIER_COL = 'O'; // answer to the lead form's qualifying question, where the form has one
 const GENDER_COL    = 'P'; // Founders Office form only
 const DOB_COL       = 'Q'; // Founders Office form only
+const OCCUPATION_COL = 'R'; // Leaders forms only — the occupation answer on its own, so it can be filtered
 
 // ── Google Sheets client (service account from env var — Vercel has no files) ──
 const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
@@ -35,6 +36,7 @@ function routeToSheet(formName) {
   if (n.includes('founders office') || n.includes("founder's office")) return 'Founders Office';
   if (n.includes('thoraipakkam'))                            return 'Thoraipakkam';
   if (n.includes('hyderabad'))                               return 'Hyderabad';
+  if (n.includes('solapur'))                                 return 'Solapur';
   if (n.includes('surat') || n.includes('leader'))           return 'Surat';
   if (n.includes('retir'))                                   return 'Retirees';
   if (n.includes('housewiv') || n.includes('homemaker'))     return 'Housewives';
@@ -148,10 +150,10 @@ async function processLead(leadgenId, formId) {
   // stamp source ad + leadgen_id + qualifier + gender + DOB on that same explicit row.
   await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${sheetName}!${SOURCE_COL}${targetRow}:${DOB_COL}${targetRow}`,
+    range: `${sheetName}!${SOURCE_COL}${targetRow}:${OCCUPATION_COL}${targetRow}`,
     valueInputOption: 'RAW',
-    resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier, f.gender || '', f.date_of_birth || '']] },
-  }).catch(e => console.error('source-ad/leadid/qualifier/gender/dob stamp failed:', e.message));
+    resource: { values: [[lead.ad_name || '', String(leadgenId), qualifier, f.gender || '', f.date_of_birth || '', f.occupation || '']] },
+  }).catch(e => console.error('source-ad/leadid/qualifier/gender/dob/occupation stamp failed:', e.message));
   console.log(`[${new Date().toISOString()}] ${sheetName} +1 | ${f.full_name || 'N/A'} | ${phone} | ad: ${lead.ad_name || '?'}`);
 }
 
