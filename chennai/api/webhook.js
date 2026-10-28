@@ -33,6 +33,7 @@ const sheets = google.sheets({ version: 'v4', auth });
 // Thoraipakkam and Hyderabad leads into the Surat tab.
 function routeToSheet(formName) {
   const n = (formName || '').toLowerCase();
+  if (n.includes('life advisory office') || /\blao\b/.test(n)) return 'LAO';
   if (n.includes('founders office') || n.includes("founder's office")) return 'Founders Office';
   if (n.includes('thoraipakkam'))                            return 'Thoraipakkam';
   if (n.includes('hyderabad'))                               return 'Hyderabad';
