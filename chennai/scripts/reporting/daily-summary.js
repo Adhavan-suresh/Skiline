@@ -123,12 +123,12 @@ try {
 
 function qualityText(name) {
   const q = quality[name];
-  if (!q || q.recent[0] < MIN_RATED) return 'Q –';
+  if (!q || q.recent[0] < MIN_RATED) return '–';
   const pct = (b) => (b[1] / b[0]) * 100;
   const now = pct(q.recent);
-  if (q.prior[0] < MIN_RATED) return `Q ${now.toFixed(0)}%`;
+  if (q.prior[0] < MIN_RATED) return `${now.toFixed(0)}%`;
   const diff = now - pct(q.prior);
-  return `Q ${now.toFixed(0)}% ${diff >= ARROW_POINTS ? '▲' : diff <= -ARROW_POINTS ? '▼' : '▬'}`;
+  return `${now.toFixed(0)}%${diff >= ARROW_POINTS ? '▲' : diff <= -ARROW_POINTS ? '▼' : '▬'}`;
 }
 
 // ── Format ───────────────────────────────────────────────────────────────────
@@ -143,18 +143,46 @@ const dayLabel = new Date(Date.parse(YESTERDAY)).toLocaleDateString('en-IN', { w
 const byCampaign = new Map();
 for (const a of ads) byCampaign.set(a.campaign, [...(byCampaign.get(a.campaign) || []), a]);
 
+// Telegram has no tables: a <pre> block keeps the columns aligned, so ad names are
+// shortened to fit a phone screen (12 chars). Unknown ads fall back to truncation.
+const SHORT_NAMES = {
+  'housewives - dont know where to start (notice)': 'HW Notice',
+  'housewives - back to work (copy v2 - hardest project)': 'HW Back2Work',
+  'housewives - tamil test v1': 'HW Tamil',
+  'housewives - does it count as experience': 'HW DoesCount',
+  'skiline - housewives - phase 2': 'HW Phase 2',
+  'retirees - bring purpose back (notice)': 'Ret Purpose',
+  'retirees - retired not done (2nd ad)': 'Ret NotDone',
+  'retirees - tamil test v1': 'Ret Tamil',
+  'surat - p5 - trust confession (v2 no income line)': 'Surat P5 v2',
+  'surat - p5 - trust confession (gujarati)': 'Surat P5',
+  'surat - p8 - not for everyone (gujarati)': 'Surat P8',
+  'solapur - not for everyone (hindi)': 'Sol NFE',
+  'solapur - real company real training (hindi)': 'Sol RealCo',
+  'lao - great at sales (person)': 'LAO Person',
+  'lao - not an agent job (notice)': 'LAO Notice',
+};
+const shortName = (n) => SHORT_NAMES[n.toLowerCase().replace(/\s*[–—-]\s*/g, ' - ').replace(/\s+/g, ' ').trim()] || n.slice(0, 12);
+
+const W = { name: 12, spend: 5, leads: 3, cpl: 4, ctr: 4, q: 6 };
+const row = (name, spend, leads, cplText, ctr, q) =>
+  [name.padEnd(W.name), String(spend).padStart(W.spend), String(leads).padStart(W.leads), cplText.padStart(W.cpl), ctr.padStart(W.ctr), q.padStart(W.q)].join(' ');
+const num = (v) => Math.round(v).toLocaleString('en-IN');
+const plainCpl = (spend, leads) => (leads ? num(spend / leads) : '–');
+
 const header = `<b>Skiline daily, ${dayLabel}</b>\nTotal: ${inr(totalSpend)} | ${totalLeads} leads | CPL ${cpl(totalSpend, totalLeads)}`;
 const blocks = [];
 for (const [campaign, list] of [...byCampaign].sort((x, y) => y[1].reduce((s, a) => s + a.spend, 0) - x[1].reduce((s, a) => s + a.spend, 0))) {
   const cs = list.reduce((s, a) => s + a.spend, 0);
   const cl = list.reduce((s, a) => s + a.leads, 0);
-  const lines = [`<b>${esc(campaign.replace('Skiline Recruitment — ', ''))}</b> ${inr(cs)} | ${cl} leads | CPL ${cpl(cs, cl)}`];
+  const table = [row('Ad', 'Spend', 'Ld', 'CPL', 'CTR%', 'Qual'), '-'.repeat(Object.values(W).reduce((a, b) => a + b, 0) + 5)];
   for (const a of list.sort((x, y) => y.spend - x.spend)) {
-    lines.push(`${esc(a.name)}\n   ${inr(a.spend)} · ${a.leads} leads · CPL ${cpl(a.spend, a.leads)} · CTR ${a.ctr.toFixed(1)}% · ${qualityText(a.name)}`);
+    table.push(row(esc(shortName(a.name)), num(a.spend), a.leads, plainCpl(a.spend, a.leads), a.ctr.toFixed(1), qualityText(a.name)));
   }
-  blocks.push(lines.join('\n'));
+  table.push(row('Total', num(cs), cl, plainCpl(cs, cl), '', ''));
+  blocks.push(`<b>${esc(campaign.replace('Skiline Recruitment — ', ''))}</b>\n<pre>${table.join('\n')}</pre>`);
 }
-const footer = `Q = rated leads scoring 3+, last 28 days of leads. ▲▼ = 5+ pts vs the 28 days before; – = under ${MIN_RATED} rated.${qualityNote ? '\n' + qualityNote : ''}`;
+const footer = `Spend and CPL in ₹. Qual = rated leads scoring 3+, last 28 days of leads. ▲▼ = 5+ pts vs the 28 days before; – = under ${MIN_RATED} rated.${qualityNote ? '\n' + qualityNote : ''}`;
 
 // Telegram caps a message at 4096 chars: pack whole campaign blocks into messages.
 const messages = [];
